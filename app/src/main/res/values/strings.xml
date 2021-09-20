@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">FinancialPlan</string>
+    <string name="full_name">full Name</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="register">REGISTER</string>
+    <string name="link_to_login">Already have an account? Clickk here!</string>
+    <string name="login">LOGIN</string>
+    <string name="forgot_password">Forgot Password</string>
+    <string name="link_to_register">Not Have Account yet, Register</string>
+    <string name="cd_fab">Button for adding new transaction</string>
+    <string name="head_balance">Balance : Rp.</string>
+    <string name="default_value">0</string>
+    <string name="logout">LOGOUT</string>
+
+
+    <string-array name="planets_array">
+        <item>Mercury</item>
+        <item>Venus</item>
+        <item>Earth</item>
+        <item>Mars</item>
+        <item>Jupiter</item>
+        <item>Saturn</item>
+        <item>Uranus</item>
+        <item>Neptune</item>
+    </string-array>
+
+</resources>
