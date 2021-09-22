@@ -10,7 +10,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.mubassyir.financialplan.adapter.TransactionAdapter
 import com.mubassyir.financialplan.databinding.ActivityMainBinding
 import com.mubassyir.financialplan.viewmodel.TransactionViewModel
@@ -24,10 +26,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
-        setContentView(view)
-
-        val adapter = TransactionAdapter()
         vm = ViewModelProviders.of(this)[TransactionViewModel::class.java]
+
+        setContentView(view)
+        setupRv()
+        setupBalance()
 
         binding.btnAdd.setOnClickListener {
             Intent(this, TransactionForm::class.java).also {
@@ -35,16 +38,29 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+    private fun setupBalance() {
+        vm.getAllCashIn().observe(this,{cashIn->
+            vm.getAllCashOut().observe(this@MainActivity,{ cashOut->
+                binding.tvBalance.text = cashIn.sum().minus(cashOut.sum()).toString()
+            })
+        })
+    }
+
+    private fun setupRv() {
+        val adapter = TransactionAdapter()
+        binding.pbMain.visibility = View.VISIBLE
         vm.getAllTransaction().observe(this, {
             if (it.isEmpty()) binding.layoutNoDataRecord.visibility = View.VISIBLE else binding.layoutNoDataRecord.visibility = View.INVISIBLE
             adapter.setData(it)
             adapter.notifyDataSetChanged()
+            binding.pbMain.visibility = View.INVISIBLE
         })
         with(binding.rvTransaction) {
             this.adapter = adapter
             this.layoutManager = LinearLayoutManager(context)
         }
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -62,7 +78,6 @@ class MainActivity : AppCompatActivity() {
                         finish()
                     }
                 }
-
                 true
             }
             else -> super.onOptionsItemSelected(item)

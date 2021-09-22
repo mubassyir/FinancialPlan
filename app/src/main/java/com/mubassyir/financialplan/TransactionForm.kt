@@ -1,13 +1,12 @@
 package com.mubassyir.financialplan
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
 import com.mubassyir.financialplan.data.model.Transaction
@@ -17,15 +16,29 @@ import com.mubassyir.financialplan.viewmodel.TransactionViewModel
 
 
 class TransactionForm : AppCompatActivity() {
+
+    private lateinit var mode : Mode
+
     private lateinit var binding: ActivityTransactionFormBinding
     private lateinit var adapter: ArrayAdapter<TransactionType>
     private lateinit var vm: TransactionViewModel
+
+    private var nominal:String=""
+    private var date:Long=0
+    private var note:String=""
+    private var transactionType:String=""
     private var transactionTypeCode: Int? = null
+
+    //experimental
+    var id:Int = 0
+    //experimental
 
 
     companion object {
+        const val PAYLOAD = "payload"
         const val NAME_TYPE_UPDATE = "name_type_update"
         const val CODE_TYPE_UPDATE = 21
+        private const val FIELD_REQUIRED = "Field Required"
         private const val CASH_IN = "Cash In"
         private const val CASH_OUT = "Cash Out"
     }
@@ -39,28 +52,62 @@ class TransactionForm : AppCompatActivity() {
             this?.setDisplayHomeAsUpEnabled(true)
             this?.setDisplayHomeAsUpEnabled(true)
         }
+
+
         setupSpinner()
+        setupMode()
 
         vm = ViewModelProviders.of(this)[TransactionViewModel::class.java]
 
-        vm.getAllTransaction().observe(this, {
-            Log.i("getAll data", it.toString())
-        })
+        binding.btnSave.setOnClickListener {
+            updateOrAddTransaction()
+        }
+    }
 
+    private fun updateOrAddTransaction() {
+        nominal = binding.etNominal.text.toString().trim()
+        date = System.currentTimeMillis()
+        note = binding.etNote.text.toString().trim()
+        transactionType = if (transactionTypeCode == 1) CASH_IN else CASH_OUT
+        if(nominal.isEmpty()){
+            with(binding.etNominal){
+                error = FIELD_REQUIRED
+                requestFocus()
+            }
+        }
+        if (note.isEmpty()){
+            with(binding.etNote){
+                error = FIELD_REQUIRED
+                requestFocus()
+            }
+        }
+        when(mode){
+            Mode.AddTransaction -> vm.insert(Transaction(0,date,nominal.toLong(),transactionType,note))
+            Mode.UpdateTransaction -> vm.update(Transaction(id,date,nominal.toLong(),transactionType,note))
+        }
+        onBackPressed()
+    }
+
+    private fun setupMode() {
         intent?.let {
             if ( it.getIntExtra(NAME_TYPE_UPDATE, 0) == CODE_TYPE_UPDATE){
-                actUpdate()
+                mode = Mode.UpdateTransaction
+            }
+            else{
+                mode = Mode.AddTransaction
             }
         }
 
-        binding.btnSave.setOnClickListener {
-            val nominal = binding.etNominal.text.toString().toLong()
-            val date = System.currentTimeMillis()
-            val note = binding.etNote.text.toString()
-            val transactionType = if (transactionTypeCode == 0)  CASH_OUT else CASH_IN
-            Toast.makeText(this@TransactionForm,transactionTypeCode.toString(),Toast.LENGTH_SHORT).show()
-
-            vm.insert(Transaction(0,date,nominal,transactionType,note))
+        when(mode) {
+            Mode.AddTransaction -> title = "Add Transaction"
+            Mode.UpdateTransaction -> {
+                title = "Update Transaction"
+                intent.getParcelableExtra<Transaction>(PAYLOAD).also {
+                    binding.etNominal.setText(it?.amount.toString())
+                    binding.etNote.setText(it?.note)
+                    id = it!!.id
+                }
+            }
         }
     }
 
@@ -71,10 +118,22 @@ class TransactionForm : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.btn_menu_close -> {
-            onBackPressed()
+            if (mode == Mode.UpdateTransaction){
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle("Warning")
+                builder.setMessage("Are you sure to delete?")
+
+                builder.setPositiveButton("Yes") { dialog, which ->
+                    vm.delete(Transaction(id,date,nominal.toLong(),transactionType,note))
+                    onBackPressed()
+                }
+                builder.setNegativeButton("No"){_,_  ->}
+                builder.show()
+            } else{
+                onBackPressed()
+            }
             true
         }
-
         else -> {
             super.onOptionsItemSelected(item)
         }
@@ -93,13 +152,6 @@ class TransactionForm : AppCompatActivity() {
         }
     }
 
-    private fun actUpdate() {
-        TODO("Not yet implemented")
-    }
-
-    private fun actAdd() {
-        TODO("Not yet implemented")
-    }
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
@@ -114,4 +166,8 @@ class TransactionForm : AppCompatActivity() {
         return customObjects
     }
 
+    private sealed class Mode {
+        object AddTransaction : Mode()
+        object UpdateTransaction : Mode()
+    }
 }

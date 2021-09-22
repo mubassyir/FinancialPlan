@@ -17,4 +17,10 @@ interface TransactionDao {
 
     @Query("SELECT * from `Transaction` ORDER BY id ASC")
     fun getrAllTransaction(): LiveData<List<Transaction>>
+
+    @Query ("SELECT amount FROM 'Transaction' WHERE transaction_type = 'Cash In' ")
+    fun getAllCashIn():LiveData<List<Long>>
+
+    @Query ("SELECT amount FROM 'Transaction' WHERE transaction_type = 'Cash Out' ")
+    fun getAllCashOut():LiveData<List<Long>>
 }

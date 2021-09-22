@@ -10,12 +10,16 @@ import com.mubassyir.financialplan.utils.subscribeOnBackground
 class TransactionRepository (ctx:Application){
     private var transactionDao : TransactionDao
     private val allTransaction : LiveData<List<Transaction>>
+    private val getAllCashIn : LiveData<List<Long>>
+    private val getAllCashOut : LiveData<List<Long>>
 
     private val database = TransactionRoomDatabase.getInstance(ctx)
 
     init {
         transactionDao = database.transactionDao()
         allTransaction = transactionDao.getrAllTransaction()
+        getAllCashIn = transactionDao.getAllCashIn()
+        getAllCashOut = transactionDao.getAllCashOut()
     }
 
     fun getAllTransaction(): LiveData<List<Transaction>> {
@@ -37,5 +41,13 @@ class TransactionRepository (ctx:Application){
         subscribeOnBackground {
             transactionDao.delete(transaction)
         }
+    }
+
+    fun getAllCashIn(): LiveData<List<Long>> {
+      return getAllCashIn
+    }
+
+    fun getAllCashOut(): LiveData<List<Long>> {
+        return getAllCashOut
     }
 }

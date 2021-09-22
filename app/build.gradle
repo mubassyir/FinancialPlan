@@ -9,7 +9,7 @@ android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
 
-    defaultConfig {
+        defaultConfig {
         applicationId "com.mubassyir.financialplan"
         minSdkVersion 22
         targetSdkVersion 30

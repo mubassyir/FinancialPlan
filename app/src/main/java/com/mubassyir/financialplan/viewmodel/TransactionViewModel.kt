@@ -10,6 +10,8 @@ class TransactionViewModel(app:Application) :AndroidViewModel(app){
 
     private val repository = TransactionRepository(app)
     private val getAllTransaction = repository.getAllTransaction()
+    private val getAllCashIn = repository.getAllCashIn()
+    private val getAllCashOut = repository.getAllCashOut()
 
     fun getAllTransaction(): LiveData<List<Transaction>> {
         return getAllTransaction
@@ -26,4 +28,13 @@ class TransactionViewModel(app:Application) :AndroidViewModel(app){
     fun delete(transaction: Transaction){
         repository.delete(transaction)
     }
+
+    fun getAllCashIn(): LiveData<List<Long>> {
+        return getAllCashIn
+    }
+
+    fun getAllCashOut(): LiveData<List<Long>> {
+        return getAllCashOut
+    }
+
 }
